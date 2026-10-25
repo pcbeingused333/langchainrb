@@ -20,8 +20,8 @@ module Langchain
             tool_choice:,
             parallel_tool_calls:
           )
-            Langchain.logger.warn "WARNING: `parallel_tool_calls:` is not supported by Google Gemini currently" if parallel_tool_calls
-
+            # Google Gemini has no option to disable parallel function calls: Assistant#run_tools
+            # runs one tool call at a time when parallel_tool_calls is false.
             params = {messages: messages}
             if tools.any?
               params[:tools] = build_tools(tools)
@@ -40,9 +40,7 @@ module Langchain
           # @param tool_call_id [String] The tool call ID
           # @return [Messages::GoogleGeminiMessage] The Google Gemini message
           def build_message(role:, content: nil, image_url: nil, tool_calls: [], tool_call_id: nil)
-            Langchain.logger.warn "Image URL is not supported by Google Gemini" if image_url
-
-            Messages::GoogleGeminiMessage.new(role: role, content: content, tool_calls: tool_calls, tool_call_id: tool_call_id)
+            Messages::GoogleGeminiMessage.new(role: role, content: content, image_url: image_url, tool_calls: tool_calls, tool_call_id: tool_call_id)
           end
 
           # Extract the tool call information from the Google Gemini tool call hash
