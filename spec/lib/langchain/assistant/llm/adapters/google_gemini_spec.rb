@@ -18,6 +18,27 @@ RSpec.describe Langchain::Assistant::LLM::Adapters::GoogleGemini do
         system: "Instructions"
       })
     end
+
+    it "does not log a warning for the default parallel_tool_calls" do
+      expect(Langchain.logger).not_to receive(:warn)
+
+      subject.build_chat_params(
+        messages: [{role: "user", content: "Hello"}],
+        instructions: "Instructions",
+        tools: [Langchain::Tool::Calculator.new],
+        tool_choice: "auto",
+        parallel_tool_calls: true
+      )
+    end
+  end
+
+  describe "#build_message" do
+    it "keeps the image_url" do
+      message = subject.build_message(role: "user", content: "Describe this image.", image_url: "gs://bucket/cat.png")
+
+      expect(message.image_url).to eq("gs://bucket/cat.png")
+      expect(message.to_hash[:parts].last).to eq({fileData: {mimeType: "image/png", fileUri: "gs://bucket/cat.png"}})
+    end
   end
 
   describe "#support_system_message?" do
